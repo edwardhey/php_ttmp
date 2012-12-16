@@ -3,19 +3,24 @@ php_ttmp
 
 php扩展之敏感字检查
 
-Email:247689486[at]qq.com
-QQ:247689486
-Site:http://edwardhey.webbeb.com
+#Email:247689486[at]qq.com
+#QQ:247689486
+#Site:http://edwardhey.webbeb.com
 
 目前在linux下,php-5.3.15上测试通过，如果有问题或定制开发请Email联系我或QQ联系我!
+
+算法特点:
+* 无序的hash生成算法，即可以由前往后，也可以由后往前生成…当然你喜欢也可以从中间往两边
+* 使用结束符进行模式匹配，提高了精准和速度
+
+算法理论介绍:
+http://www.cnblogs.com/sumtec/archive/2008/02/01/1061742.html
+
+使用例子:
+* 字典: 半月|月(假设"半月"为敏感字,"|"是分隔符,再后面的敏感字中的终止符)
+* 设置字典hash算法: 调用ttmp_hash函数算法取得字符串的hash值
+* 检查敏感字:调用ttmp_check函数来检查是否含有敏感字，如果没有则返回NULL,如果检查到就返回命中的敏感字
 
 使用注意：
 * 只支持utf-8编码
 * 每行脏字只能有7个字符(每个中文算1个，单个英文字母算1个,其他半角也算一个)
-
-
-使用例子:
-* 字典格式以及使用请查看 ttmp.php
-
-算法理论介绍:
-http://www.cnblogs.com/sumtec/archive/2008/02/01/1061742.html
