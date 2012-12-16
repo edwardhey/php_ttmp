@@ -169,7 +169,7 @@ PHP_FUNCTION(ttmp_check)
         return;
     
     if (str_len<1) {
-        RETURN_BOOL(false);
+        RETURN_NULL();
     }
     
     pStr=str;
