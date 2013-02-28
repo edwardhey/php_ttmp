@@ -84,6 +84,6 @@ ZEND_END_MODULE_GLOBALS(ttmp)
  * vim600: noet sw=4 ts=4 fdm=marker
  * vim<600: noet sw=4 ts=4
  */
-#define MAX_TTMP_HASH_STRLEN 7
+#define MAX_TTMP_HASH_STRLEN 100
 #define N_TTMP_CHAR sizeof(char)*3+1
 int ttmp_bit_len(int);

@@ -180,50 +180,54 @@ PHP_FUNCTION(ttmp_check)
     
     int nStrBitLen = ttmp_bit_len(*pStr);
     int nStrBitPos = 0;
+	int nStrPos = 0;
     zval **zvalue;
     
    
-    char *nTrackBackEnd = pStr;
+    //char *nTrackBackEnd = pStr;
+	int nPosTrackBackEnd = 0;
+	int nPosTrackBackStart = 0;
     int nTrackBackMaxTimes = MAX_TTMP_HASH_STRLEN * 4;//utf-8最多4个字节
     int nTrackBackTimes = 0;
     char *pTrackBackStart;
 
     unsigned long hashCode = 0;
-    
+
+	//return array
+	array_init(return_value);
+
     while (*pStr!='\0') {
         
         *(token+nStrBitPos) = *pStr;
         
-        pStr++;
         nStrBitLen--;
+        pStr++;
         nStrBitPos++;
+		nStrPos++;
         
         if (!nStrBitLen) {
             //判断token 是否命中
             if(zend_hash_find(arr_hash, token, (unsigned int)strlen(token)+1, (void**)&zvalue)==SUCCESS){
                 //开始回朔
                 pTrackBackStart = pStr-1;
+				
+				nPosTrackBackStart = nStrPos-1;
                 int bitHead2 = 0;
                 int move8 = 0;
-                
-                while (pTrackBackStart>=nTrackBackEnd && nTrackBackTimes<= nTrackBackMaxTimes) {
+
+                while (nPosTrackBackStart>=nPosTrackBackEnd && nTrackBackTimes<= nTrackBackMaxTimes) {
                     bitHead2 = (*pTrackBackStart&0xFF)>>6;
                     hashCode+=((*pTrackBackStart&0xFF)<<(move8*8));
                     
                     if (bitHead2!=2) {//验证
-                        
                         if(Z_TYPE_P(*zvalue)==IS_ARRAY){
                             
                             const HashTable *htArr = Z_ARRVAL_PP(zvalue);
                             zval **ppStr=NULL;
                             if(zend_hash_index_find(htArr, hashCode, (void **)&ppStr)==SUCCESS){
-                                //RETURN_STRINGL(Z_STRVAL_PP(ppStr), Z_STRLEN_PP(ppStr), 1);
-                                
-                                
-                                Z_TYPE_P(return_value) = IS_STRING;
-                                Z_STRVAL_P(return_value) = Z_STRVAL_PP(ppStr);
-                                Z_STRLEN_P(return_value) = Z_STRLEN_PP(ppStr);
-                                goto endwhile;
+								nPosTrackBackEnd = nStrPos;
+								add_next_index_string(return_value, Z_STRVAL_PP(ppStr), 1);
+								break;
                             }
                         }
                         move8 = 0;
@@ -231,17 +235,14 @@ PHP_FUNCTION(ttmp_check)
                         move8++;
                     }
                     
-                    pTrackBackStart--;
+					nPosTrackBackStart--;
                     nTrackBackTimes++;
+                    pTrackBackStart--;
                 }
                 hashCode = 0;
-                nTrackBackEnd = pStr;
                 nTrackBackTimes = 0;
                 
-            }/*else{
-                //php_printf("not match\n");
             }
-             */
             efree(token);
             token = (char*)emalloc(N_TTMP_CHAR);
             memset(token, '\0', N_TTMP_CHAR);
@@ -249,7 +250,6 @@ PHP_FUNCTION(ttmp_check)
             nStrBitPos = 0;
         }
     }
-    endwhile:
     efree(token);
 }
 /* }}} */
@@ -280,7 +280,7 @@ PHP_FUNCTION(ttmp_hash)
         if(!iBitLen){
             iBitLen = ttmp_bit_len(*pStr);
             if(++strlen>MAX_TTMP_HASH_STRLEN){
-                php_error_docref(NULL TSRMLS_CC, E_ERROR, "ttmp_hash: hash function only can count %d words",MAX_TTMP_HASH_STRLEN);
+                php_error_docref(NULL TSRMLS_CC, E_ERROR, "ttmp_hash: hash function only can count %d words, %s not match!",MAX_TTMP_HASH_STRLEN,str);
             }
         }
     }
